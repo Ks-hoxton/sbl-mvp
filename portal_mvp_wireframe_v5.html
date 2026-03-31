@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Главная страница портала — MVP v5</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f4f0; color: #1a1a1a; padding: 24px; }
+  .page { max-width: 960px; margin: 0 auto; }
+
+  .block { background: #fff; border: 0.5px solid #c8c5bc; border-radius: 8px; padding: 10px 12px; position: relative; }
+  .sec { font-size: 10px; font-weight: 600; color: #6b6b6b; letter-spacing: 0.09em; text-transform: uppercase; margin: 14px 0 5px; padding-left: 6px; border-left: 2px solid #c8c5bc; }
+  .row { display: grid; gap: 8px; }
+  .col2 { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .col3 { grid-template-columns: repeat(3, minmax(0,1fr)); }
+  .col4 { grid-template-columns: repeat(4, minmax(0,1fr)); }
+  .col5 { grid-template-columns: repeat(5, minmax(0,1fr)); }
+  .col6 { grid-template-columns: repeat(6, minmax(0,1fr)); }
+  .divider { height: 0.5px; background: #e0ddd4; margin: 12px 0; }
+  .avatar { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; flex-shrink: 0; }
+  .mvp { position: absolute; top: 8px; right: 8px; font-size: 9px; font-weight: 600; background: #e1f5ee; color: #0f6e56; padding: 1px 6px; border-radius: 3px; }
+  .person-card { background: #f5f4f0; border: 0.5px solid #d8d5cc; border-radius: 8px; padding: 7px 9px; display: flex; align-items: center; gap: 7px; margin-bottom: 4px; }
+
+  /* Nav */
+  .nav-pill { background: #f5f4f0; border: 0.5px solid #d8d5cc; border-radius: 8px; padding: 10px 6px; text-align: center; }
+  .nav-pill .ic { font-size: 17px; display: block; margin-bottom: 3px; }
+  .nav-pill .nl { font-size: 10px; color: #6b6b6b; font-weight: 500; line-height: 1.3; }
+
+  /* Action pills */
+  .action-pill { display: flex; flex-direction: column; align-items: center; gap: 4px; background: #f5f4f0; border: 0.5px solid #d8d5cc; border-radius: 8px; padding: 9px 6px; text-align: center; }
+  .action-pill .ai { font-size: 18px; line-height: 1; }
+  .action-pill .al { font-size: 10px; color: #6b6b6b; font-weight: 500; line-height: 1.25; }
+
+  /* Microblog */
+  .post { background: #fff; border: 0.5px solid #d8d5cc; border-radius: 8px; padding: 10px 12px; margin-bottom: 6px; }
+  .post-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .post-body { font-size: 11.5px; color: #1a1a1a; line-height: 1.5; margin-bottom: 8px; }
+  .post-body a { color: #6b6b6b; font-size: 10.5px; border-bottom: 0.5px dashed #c8c5bc; text-decoration: none; }
+  .post-tag { display: inline-block; font-size: 9px; font-weight: 600; padding: 1px 6px; border-radius: 3px; }
+  .reactions { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
+  .rx { display: flex; align-items: center; gap: 3px; border: 0.5px solid #c8c5bc; border-radius: 12px; padding: 2px 8px; font-size: 11px; cursor: pointer; background: #f5f4f0; user-select: none; transition: all .15s; }
+  .rx:hover { border-color: #a0a09a; background: #fff; }
+  .rx.active { background: #dbeafe; border-color: #93c5fd; }
+  .rx .cnt { font-size: 10px; color: #6b6b6b; font-weight: 500; }
+  .rx-add { display: flex; align-items: center; gap: 2px; padding: 2px 7px; border: 0.5px dashed #c8c5bc; border-radius: 12px; font-size: 11px; cursor: pointer; color: #6b6b6b; }
+
+  /* Events full-width */
+  .event-card { display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: #f5f4f0; border: 0.5px solid #d8d5cc; border-radius: 8px; }
+  .event-date { display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fff; border: 0.5px solid #d8d5cc; border-radius: 6px; padding: 4px 6px; width: 40px; flex-shrink: 0; }
+  .event-date .day { font-size: 16px; font-weight: 600; color: #1a1a1a; line-height: 1; }
+  .event-date .mon { font-size: 9px; color: #6b6b6b; font-weight: 500; text-transform: uppercase; }
+  .event-add { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 10px; background: #f5f4f0; border: 0.5px dashed #c8c5bc; border-radius: 8px; cursor: pointer; text-align: center; flex-direction: column; }
+
+  /* Resources */
+  .res-card { background: #f5f4f0; border: 0.5px solid #d8d5cc; border-radius: 8px; padding: 9px 10px; display: flex; align-items: center; gap: 8px; }
+  .res-icon { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; background: #fff; border: 0.5px solid #d8d5cc; }
+
+  /* Footer */
+  .footer { background: #f5f4f0; border: 0.5px solid #d8d5cc; border-radius: 8px; padding: 14px 16px; }
+  .social-btn { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border: 0.5px solid #c8c5bc; border-radius: 20px; font-size: 11px; color: #6b6b6b; background: #fff; cursor: pointer; }
+  .social-btn:hover { border-color: #a0a09a; }
+
+  /* Page header */
+  .page-title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+
+  @media (max-width: 640px) {
+    .col6 { grid-template-columns: repeat(3, minmax(0,1fr)); }
+    .col5 { grid-template-columns: repeat(3, minmax(0,1fr)); }
+    .col4 { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .col3 { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .col2 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Page title -->
+  <div class="page-title">
+    <div>
+      <div style="font-size:15px;font-weight:600;color:#1a1a1a">Главная страница портала — MVP v5</div>
+      <div style="font-size:11px;color:#6b6b6b;margin-top:2px">6 разделов навигации · микроблог с реакциями · полноширинные события</div>
+    </div>
+    <span style="font-size:10px;font-weight:600;background:#e1f5ee;color:#0f6e56;padding:3px 9px;border-radius:4px">веб портал</span>
+  </div>
+
+  <!-- HEADER -->
+  <div class="sec">Шапка</div>
+  <div class="block" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+    <div style="display:flex;align-items:center;gap:8px">
+      <div style="width:26px;height:26px;background:#f5f4f0;border:0.5px solid #c8c5bc;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;color:#6b6b6b">лого</div>
+      <span style="font-size:12px;font-weight:600;color:#1a1a1a">Корп портал</span>
+    </div>
+    <div style="flex:1;max-width:200px;background:#f5f4f0;border:0.5px solid #c8c5bc;border-radius:20px;padding:6px 12px;font-size:11px;color:#6b6b6b;display:flex;align-items:center;gap:5px">
+      <span>🔍</span><span>Поиск по порталу...</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:7px">
+      <div class="avatar" style="background:#e1f5ee;color:#0f6e56">АИ</div>
+      <div>
+        <div style="font-size:11px;font-weight:600;color:#1a1a1a">Анна И.</div>
+        <div style="font-size:10px;color:#6b6b6b">Product</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXTERNAL SYSTEMS -->
+  <div class="sec">Внешние системы и быстрые действия</div>
+  <div class="block">
+    <div class="row col5" style="gap:6px">
+      <div class="action-pill" style="border-color:#b5d4f4">
+        <div style="width:32px;height:32px;border-radius:7px;background:#e6f1fb;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#185fa5;margin-bottom:1px">Bi</div>
+        <span class="al">Битрикс24</span>
+      </div>
+      <div class="action-pill" style="border-color:#f5c4b3">
+        <div style="width:32px;height:32px;border-radius:7px;background:#faece7;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#993c1d;margin-bottom:1px">HR</div>
+        <span class="al">HR-система</span>
+      </div>
+      <div class="action-pill"><span class="ai">🏖️</span><span class="al">Отпуск</span></div>
+      <div class="action-pill"><span class="ai">🤒</span><span class="al">Больничный</span></div>
+      <div class="action-pill" style="border-color:#9fe1cb"><span class="ai">💡</span><span class="al">Предложить идею</span></div>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="sec">Hero-баннер / карусель</div>
+  <div class="block" style="padding:0;overflow:hidden">
+    <span class="mvp">MVP ✓</span>
+    <div style="background:#f5f4f0;padding:13px 16px 9px">
+      <div style="font-size:9px;font-weight:600;color:#6b6b6b;letter-spacing:.08em;margin-bottom:3px">ГЛАВНОЕ СОБЫТИЕ</div>
+      <div style="font-size:13px;font-weight:600;color:#1a1a1a;margin-bottom:4px">Запуск новой системы коммуникаций</div>
+      <div style="font-size:11px;color:#6b6b6b;margin-bottom:9px">Переходим на Веб портал + корп мессенджер.</div>
+      <div style="display:flex;gap:6px">
+        <div style="border:0.5px solid #c8c5bc;border-radius:4px;padding:3px 10px;font-size:11px;font-weight:600;color:#1a1a1a;background:#fff;display:inline-block">Читать</div>
+        <div style="border:0.5px solid #c8c5bc;border-radius:4px;padding:3px 10px;font-size:11px;color:#6b6b6b;background:#fff;display:inline-block">▶ Видео</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:4px;align-items:center;padding:6px 16px;background:#fff">
+      <div style="width:16px;height:3px;border-radius:2px;background:#a0a09a"></div>
+      <div style="width:16px;height:3px;border-radius:2px;background:#d8d5cc"></div>
+      <div style="width:16px;height:3px;border-radius:2px;background:#d8d5cc"></div>
+      <div style="margin-left:auto;font-size:10px;color:#6b6b6b">1 / 3</div>
+    </div>
+  </div>
+
+  <!-- NAV — 6 sections -->
+  <div class="sec">Навигация по разделам</div>
+  <div class="row col6">
+    <div class="nav-pill"><span class="ic">🎓</span><span class="nl">Онбординг</span></div>
+    <div class="nav-pill"><span class="ic">🏢</span><span class="nl">О компании</span></div>
+    <div class="nav-pill"><span class="ic">👥</span><span class="nl">Команда и орг структура</span></div>
+    <div class="nav-pill"><span class="ic">📖</span><span class="nl">Правила и стандарты</span></div>
+    <div class="nav-pill" style="border-color:#b5d4f4"><span class="ic">📰</span><span class="nl" style="color:#185fa5">Новости</span></div>
+    <div class="nav-pill" style="border-color:#9fe1cb"><span class="ic">🗓️</span><span class="nl" style="color:#0f6e56">Мероприятия</span></div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 2-COL MAIN -->
+  <div class="row col2" style="align-items:start;gap:12px">
+
+    <!-- LEFT: microblog -->
+    <div>
+      <div class="sec" style="margin-top:0">Лента — микроблог</div>
+
+      <div class="post">
+        <div class="post-header">
+          <div class="avatar" style="background:#e1f5ee;color:#0f6e56">КР</div>
+          <div style="flex:1">
+            <div style="font-size:11px;font-weight:600;color:#1a1a1a">Ксения Р. <span style="font-weight:400;color:#6b6b6b">· HR</span></div>
+            <div style="font-size:10px;color:#6b6b6b">сегодня · 10:32</div>
+          </div>
+          <span class="post-tag" style="background:#e1f5ee;color:#0f6e56">Важно</span>
+        </div>
+        <div class="post-body">
+          Обновили правила согласования отпусков — теперь заявка подаётся через HR-систему минимум за 2 недели. Подробности в регламенте.<br>
+          <a href="#">→ Читать регламент</a>
+        </div>
+        <div class="reactions">
+          <div class="rx active" onclick="let c=this.querySelector('.cnt');this.classList.toggle('active');c.textContent=this.classList.contains('active')?14:13">👍 <span class="cnt">14</span></div>
+          <div class="rx" onclick="let c=this.querySelector('.cnt');this.classList.toggle('active');c.textContent=this.classList.contains('active')?4:3">👀 <span class="cnt">3</span></div>
+          <div class="rx" onclick="let c=this.querySelector('.cnt');this.classList.toggle('active');c.textContent=this.classList.contains('active')?3:2">🙏 <span class="cnt">2</span></div>
+          <div class="rx-add">+ реакция</div>
+          <div style="margin-left:auto;font-size:10px;color:#6b6b6b;cursor:pointer">💬 4</div>
+        </div>
+      </div>
+
+      <div class="post">
+        <div class="post-header">
+          <div class="avatar" style="background:#e6f1fb;color:#185fa5">ДМ</div>
+          <div style="flex:1">
+            <div style="font-size:11px;font-weight:600;color:#1a1a1a">Дима М. <span style="font-weight:400;color:#6b6b6b">· Product</span></div>
+            <div style="font-size:10px;color:#6b6b6b">вчера · 15:10</div>
+          </div>
+          <span class="post-tag" style="background:#e6f1fb;color:#185fa5">Запуск</span>
+        </div>
+        <div class="post-body">
+          Новая CRM-интеграция с Битриксом — данные синхронизируются в реальном времени 🚀 Задачи автоматически попадают в доску.<br>
+          <a href="#">→ Открыть в Битрикс24</a> &nbsp;<a href="#">→ Инструкция</a>
+        </div>
+        <div class="reactions">
+          <div class="rx" onclick="let c=this.querySelector('.cnt');this.classList.toggle('active');c.textContent=this.classList.contains('active')?22:21">🔥 <span class="cnt">21</span></div>
+          <div class="rx" onclick="let c=this.querySelector('.cnt');this.classList.toggle('active');c.textContent=this.classList.contains('active')?9:8">👍 <span class="cnt">8</span></div>
+          <div class="rx" onclick="let c=this.querySelector('.cnt');this.classList.toggle('active');c.textContent=this.classList.contains('active')?5:4">🎉 <span class="cnt">4</span></div>
+          <div class="rx-add">+ реакция</div>
+          <div style="margin-left:auto;font-size:10px;color:#6b6b6b;cursor:pointer">💬 7</div>
+        </div>
+      </div>
+
+      <div class="post">
+        <div class="post-header">
+          <div class="avatar" style="background:#faeeda;color:#854f0b">АП</div>
+          <div style="flex:1">
+            <div style="font-size:11px;font-weight:600;color:#1a1a1a">Алёна П. <span style="font-weight:400;color:#6b6b6b">· Marketing</span></div>
+            <div style="font-size:10px;color:#6b6b6b">3 дня назад</div>
+          </div>
+          <span class="post-tag" style="background:#faeeda;color:#854f0b">Событие</span>
+        </div>
+        <div class="post-body">
+          All-Hands — 15 апреля в 12:00. Итоги Q1, планы на Q2, вопросы команды.<br>
+          <a href="#">→ Добавить в календарь</a> &nbsp;<a href="#">→ Ссылка на встречу</a>
+        </div>
+        <div class="reactions">
+          <div class="rx" onclick="let c=this.querySelector('.cnt');this.classList.toggle('active');c.textContent=this.classList.contains('active')?11:10">✅ <span class="cnt">10</span></div>
+          <div class="rx" onclick="let c=this.querySelector('.cnt');this.classList.toggle('active');c.textContent=this.classList.contains('active')?7:6">👀 <span class="cnt">6</span></div>
+          <div class="rx-add">+ реакция</div>
+          <div style="margin-left:auto;font-size:10px;color:#6b6b6b;cursor:pointer">💬 2</div>
+        </div>
+      </div>
+
+      <div style="text-align:center;padding:4px 0">
+        <div style="display:inline-block;border:0.5px solid #c8c5bc;border-radius:4px;padding:5px 16px;font-size:11px;color:#6b6b6b;cursor:pointer">Загрузить ещё →</div>
+      </div>
+    </div>
+
+    <!-- RIGHT: people -->
+    <div>
+      <div class="sec" style="margin-top:0">С нами в команде</div>
+      <div class="block" style="border-color:#9fe1cb">
+        <div style="font-size:10px;font-weight:600;color:#0f6e56;letter-spacing:.06em;margin-bottom:7px">🎊 ГОДОВЩИНЫ В АПРЕЛЕ</div>
+        <div class="person-card">
+          <div class="avatar" style="background:#e1f5ee;color:#0f6e56">ПК</div>
+          <div style="flex:1"><div style="font-size:11px;font-weight:600;color:#1a1a1a">Петя К.</div><div style="font-size:10px;color:#6b6b6b">в команде</div></div>
+          <div style="text-align:right"><div style="font-size:18px;font-weight:600;color:#0f6e56">5</div><div style="font-size:9px;color:#6b6b6b">лет</div></div>
+        </div>
+        <div class="person-card">
+          <div class="avatar" style="background:#e6f1fb;color:#185fa5">АМ</div>
+          <div style="flex:1"><div style="font-size:11px;font-weight:600;color:#1a1a1a">Анна М.</div><div style="font-size:10px;color:#6b6b6b">в команде</div></div>
+          <div style="text-align:right"><div style="font-size:18px;font-weight:600;color:#185fa5">6</div><div style="font-size:9px;color:#6b6b6b">лет</div></div>
+        </div>
+        <div class="person-card">
+          <div class="avatar" style="background:#faeeda;color:#854f0b">СВ</div>
+          <div style="flex:1"><div style="font-size:11px;font-weight:600;color:#1a1a1a">Сергей В.</div><div style="font-size:10px;color:#6b6b6b">в команде</div></div>
+          <div style="text-align:right"><div style="font-size:18px;font-weight:600;color:#854f0b">3</div><div style="font-size:9px;color:#6b6b6b">года</div></div>
+        </div>
+        <div class="person-card" style="margin-bottom:0">
+          <div class="avatar" style="background:#eeedfe;color:#534ab7">ОН</div>
+          <div style="flex:1"><div style="font-size:11px;font-weight:600;color:#1a1a1a">Оля Н.</div><div style="font-size:10px;color:#6b6b6b">в команде</div></div>
+          <div style="text-align:right"><div style="font-size:18px;font-weight:600;color:#534ab7">2</div><div style="font-size:9px;color:#6b6b6b">года</div></div>
+        </div>
+      </div>
+
+      <div class="sec">Дни рождения</div>
+      <div class="block" style="border-color:#fac775">
+        <div style="font-size:10px;font-weight:600;color:#854f0b;letter-spacing:.06em;margin-bottom:7px">🎁 ДНИ РОЖДЕНИЯ В АПРЕЛЕ</div>
+        <div class="person-card" style="border:0.5px solid #fac775">
+          <div class="avatar" style="background:#faeeda;color:#854f0b">МК</div>
+          <div style="flex:1"><div style="font-size:11px;font-weight:600;color:#1a1a1a">Маша К.</div><span style="font-size:9px;background:#faeeda;color:#854f0b;padding:1px 5px;border-radius:3px;font-weight:600">сегодня ✨</span></div>
+          <span style="font-size:18px">🎂</span>
+        </div>
+        <div class="person-card">
+          <div class="avatar" style="background:#faece7;color:#993c1d">ДП</div>
+          <div style="flex:1"><div style="font-size:11px;font-weight:600;color:#1a1a1a">Дима П.</div><div style="font-size:10px;color:#6b6b6b">15 апр</div></div>
+          <span style="font-size:18px">🎂</span>
+        </div>
+        <div class="person-card" style="margin-bottom:0">
+          <div class="avatar" style="background:#eaf3de;color:#3b6d11">ЛС</div>
+          <div style="flex:1"><div style="font-size:11px;font-weight:600;color:#1a1a1a">Лена С.</div><div style="font-size:10px;color:#6b6b6b">22 апр</div></div>
+          <span style="font-size:18px">🎂</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EVENTS full width -->
+  <div class="sec">Ближайшие мероприятия</div>
+  <div class="block">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div style="font-size:12px;font-weight:600;color:#1a1a1a">Апрель 2025</div>
+      <div style="font-size:10px;color:#6b6b6b;cursor:pointer">Все мероприятия →</div>
+    </div>
+    <div class="row col3" style="gap:6px">
+      <div class="event-card">
+        <div class="event-date"><span class="day">15</span><span class="mon">апр</span></div>
+        <div style="flex:1"><div style="font-size:11px;font-weight:600;color:#1a1a1a">All-Hands Q1</div><div style="font-size:10px;color:#6b6b6b">12:00 · Zoom · вся компания</div></div>
+        <span style="font-size:9px;background:#e6f1fb;color:#185fa5;padding:1px 6px;border-radius:3px;font-weight:600;flex-shrink:0">Онлайн</span>
+      </div>
+      <div class="event-card">
+        <div class="event-date"><span class="day">18</span><span class="mon">апр</span></div>
+        <div style="flex:1"><div style="font-size:11px;font-weight:600;color:#1a1a1a">Командный квиз</div><div style="font-size:10px;color:#6b6b6b">18:00 · офис, 3 этаж</div></div>
+        <span style="font-size:9px;background:#e1f5ee;color:#0f6e56;padding:1px 6px;border-radius:3px;font-weight:600;flex-shrink:0">Офлайн</span>
+      </div>
+      <div class="event-card">
+        <div class="event-date"><span class="day">22</span><span class="mon">апр</span></div>
+        <div style="flex:1"><div style="font-size:11px;font-weight:600;color:#1a1a1a">Ретро Q1</div><div style="font-size:10px;color:#6b6b6b">15:00 · Meet · Product team</div></div>
+        <span style="font-size:9px;background:#e6f1fb;color:#185fa5;padding:1px 6px;border-radius:3px;font-weight:600;flex-shrink:0">Онлайн</span>
+      </div>
+      <div class="event-card">
+        <div class="event-date"><span class="day">25</span><span class="mon">апр</span></div>
+        <div style="flex:1"><div style="font-size:11px;font-weight:600;color:#1a1a1a">Воркшоп по брендингу</div><div style="font-size:10px;color:#6b6b6b">11:00 · переговорная «Альфа»</div></div>
+        <span style="font-size:9px;background:#e1f5ee;color:#0f6e56;padding:1px 6px;border-radius:3px;font-weight:600;flex-shrink:0">Офлайн</span>
+      </div>
+      <div class="event-card">
+        <div class="event-date"><span class="day">28</span><span class="mon">апр</span></div>
+        <div style="flex:1"><div style="font-size:11px;font-weight:600;color:#1a1a1a">1:1 митинги команды</div><div style="font-size:10px;color:#6b6b6b">весь день · по расписанию</div></div>
+        <span style="font-size:9px;background:#faeeda;color:#854f0b;padding:1px 6px;border-radius:3px;font-weight:600;flex-shrink:0">Гибрид</span>
+      </div>
+      <div class="event-add">
+        <div style="font-size:18px">➕</div>
+        <div style="font-size:11px;color:#6b6b6b">Предложить мероприятие</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESOURCES -->
+  <div class="sec">Ресурсы и материалы</div>
+  <div class="row col4" style="gap:6px">
+    <div class="res-card"><div class="res-icon">🖼️</div><div><div style="font-size:11px;font-weight:600;color:#1a1a1a">Шаблоны презентаций</div><div style="font-size:10px;color:#6b6b6b">Google Slides, PPTX</div></div></div>
+    <div class="res-card"><div class="res-icon">🎨</div><div><div style="font-size:11px;font-weight:600;color:#1a1a1a">Фоны и иллюстрации</div><div style="font-size:10px;color:#6b6b6b">для встреч и постов</div></div></div>
+    <div class="res-card"><div class="res-icon">📐</div><div><div style="font-size:11px;font-weight:600;color:#1a1a1a">Брендбук</div><div style="font-size:10px;color:#6b6b6b">логотипы, цвета, шрифты</div></div></div>
+    <div class="res-card"><div class="res-icon">❓</div><div><div style="font-size:11px;font-weight:600;color:#1a1a1a">FAQ</div><div style="font-size:10px;color:#6b6b6b">частые вопросы</div></div></div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="sec">Подвал</div>
+  <div class="footer">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <div>
+        <div style="font-size:11px;font-weight:600;color:#1a1a1a;margin-bottom:3px">Корп портал · 2025</div>
+        <div style="font-size:10px;color:#6b6b6b">Вопросы? @portal_support в корп мессенджере</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+        <div style="font-size:10px;color:#6b6b6b;margin-right:2px">Мы в соцсетях:</div>
+        <div class="social-btn"><span style="font-size:13px">✈️</span><span>Telegram</span></div>
+        <div class="social-btn"><span style="font-size:13px">📸</span><span>Instagram</span></div>
+        <div class="social-btn"><span style="font-size:13px">🔗</span><span>LinkedIn</span></div>
+        <div class="social-btn"><span style="font-size:13px">▶️</span><span>YouTube</span></div>
+      </div>
+    </div>
+    <div style="height:0.5px;background:#d8d5cc;margin:10px 0"></div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <span style="font-size:10px;color:#6b6b6b;cursor:pointer">Политика конфиденциальности</span>
+      <span style="font-size:10px;color:#6b6b6b;cursor:pointer">Правила портала</span>
+      <span style="font-size:10px;color:#6b6b6b;cursor:pointer">Обратная связь</span>
+      <span style="font-size:10px;color:#6b6b6b;cursor:pointer">Техподдержка</span>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
