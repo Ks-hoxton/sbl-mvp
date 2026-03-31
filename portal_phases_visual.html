@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SBL Портал — план по фазам</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F0EDE8;padding:24px;min-height:100vh}
+
+  /* Phase palette */
+  :root{
+    --p1:#185FA5; --p1l:#EEF3FB; --p1b:#B5D4F4;
+    --p2:#854F0B; --p2l:#FDF6E8; --p2b:#FAC775;
+    --p3:#534AB7; --p3l:#F3F2FD; --p3b:#CECBF6;
+    --p4:#993C1D; --p4l:#FCF0EB; --p4b:#F5C4B3;
+    --done:#1D9E75; --donel:#E1F5EE; --doneb:#9FE1CB;
+  }
+
+  .page{max-width:980px;margin:0 auto}
+
+  /* Top legend */
+  .legend{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;align-items:center}
+  .leg{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;transition:opacity .2s;border:1px solid transparent}
+  .leg-all{background:#1A2B38;color:#fff}
+  .leg1{background:var(--p1l);color:var(--p1);border-color:var(--p1b)}
+  .leg2{background:var(--p2l);color:var(--p2);border-color:var(--p2b)}
+  .leg3{background:var(--p3l);color:var(--p3);border-color:var(--p3b)}
+  .leg4{background:var(--p4l);color:var(--p4);border-color:var(--p4b)}
+  .leg-dot{width:8px;height:8px;border-radius:50%}
+
+  /* Wireframe grid */
+  .wf{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 20px rgba(0,0,0,.08)}
+
+  /* Each block */
+  .blk{position:relative;transition:opacity .3s}
+  .blk.dim{opacity:.15}
+
+  /* Phase badge on block */
+  .ph{position:absolute;top:8px;right:8px;font-size:9px;font-weight:600;padding:2px 8px;border-radius:3px;z-index:2;letter-spacing:.03em;pointer-events:none}
+  .ph1{background:var(--p1);color:#fff}
+  .ph2{background:var(--p2);color:#fff}
+  .ph3{background:var(--p3);color:#fff}
+  .ph4{background:var(--p4);color:#fff}
+
+  /* Phase tint overlay */
+  .tint{position:absolute;inset:0;opacity:0;transition:opacity .3s;pointer-events:none;z-index:1;border-radius:inherit}
+  .blk[data-ph="1"] .tint{background:var(--p1);opacity:.04}
+  .blk[data-ph="2"] .tint{background:var(--p2);opacity:.05}
+  .blk[data-ph="3"] .tint{background:var(--p3);opacity:.05}
+  .blk[data-ph="4"] .tint{background:var(--p4);opacity:.05}
+
+  /* Left border accent */
+  .blk::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;z-index:2}
+  .blk[data-ph="1"]::before{background:var(--p1)}
+  .blk[data-ph="2"]::before{background:var(--p2)}
+  .blk[data-ph="3"]::before{background:var(--p3)}
+  .blk[data-ph="4"]::before{background:var(--p4)}
+
+  /* Inner content */
+  .sec-label{font-size:9px;font-weight:600;color:#9b9b9b;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;padding-left:4px}
+  .inner{padding:12px 16px 12px 18px;position:relative;z-index:3}
+
+  /* Header */
+  .hdr{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .logo-box{width:28px;height:28px;background:#1A2B38;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;font-weight:600}
+  .search{flex:1;max-width:180px;background:#F5F4F0;border:.5px solid #D8D5CC;border-radius:20px;padding:5px 12px;font-size:11px;color:#9b9b9b;display:flex;align-items:center;gap:5px}
+  .avatar{width:28px;height:28px;border-radius:50%;background:#e1f5ee;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:#085041}
+
+  /* Action pills row */
+  .actions{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+  .ap{background:#F5F4F0;border:.5px solid #D8D5CC;border-radius:8px;padding:8px 4px;text-align:center}
+  .ap .ai{font-size:16px;display:block;margin-bottom:2px}
+  .ap .al{font-size:9px;color:#6b6b6b;font-weight:500;line-height:1.2}
+  .ap .ap-ph{font-size:8px;padding:1px 4px;border-radius:2px;display:inline-block;margin-top:3px}
+  .ap-p1{background:var(--p1l);color:var(--p1)}
+  .ap-p2{background:var(--p2l);color:var(--p2)}
+  .ap-p4{background:var(--p4l);color:var(--p4)}
+
+  /* Hero */
+  .hero{background:#F5F4F0;padding:14px 16px 10px;border-radius:6px}
+  .hero-eyebrow{font-size:8px;font-weight:600;color:#9b9b9b;letter-spacing:.1em;margin-bottom:3px}
+  .hero-title{font-size:13px;font-weight:600;color:#1A2B38;margin-bottom:4px}
+  .hero-sub{font-size:10px;color:#6b6b6b;margin-bottom:8px}
+  .hero-btns{display:flex;gap:5px}
+  .btn-s{border:.5px solid #D8D5CC;border-radius:4px;padding:3px 10px;font-size:10px;font-weight:500;background:#fff;color:#1A2B38;display:inline-block}
+  .hero-dots{display:flex;gap:3px;align-items:center;padding:5px 0 0}
+  .dot-active{width:16px;height:3px;border-radius:2px;background:#9b9b9b}
+  .dot-in{width:16px;height:3px;border-radius:2px;background:#D8D5CC}
+
+  /* Nav */
+  .nav6{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+  .np{background:#F5F4F0;border:.5px solid #D8D5CC;border-radius:8px;padding:9px 4px;text-align:center}
+  .np .ic{font-size:15px;display:block;margin-bottom:2px}
+  .np .nl{font-size:9px;color:#6b6b6b;font-weight:500;line-height:1.3}
+
+  /* 2-col layout */
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:0}
+
+  /* Post in feed */
+  .post{border:.5px solid #E8E5DE;border-radius:8px;padding:9px 10px;margin-bottom:6px;background:#fff}
+  .post-h{display:flex;align-items:center;gap:7px;margin-bottom:5px}
+  .post-av{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600}
+  .post-name{font-size:10px;font-weight:500;color:#1A2B38}
+  .post-time{font-size:9px;color:#9b9b9b}
+  .post-tag{font-size:8px;font-weight:600;padding:1px 5px;border-radius:3px;margin-left:auto}
+  .post-body{font-size:10px;color:#3D5A6C;line-height:1.4;margin-bottom:6px}
+  .post-link{font-size:9px;color:#9b9b9b;border-bottom:.5px dashed #D8D5CC;text-decoration:none}
+  .reactions{display:flex;gap:4px;align-items:center}
+  .rx{border:.5px solid #E8E5DE;border-radius:10px;padding:2px 7px;font-size:10px;color:#9b9b9b;display:flex;align-items:center;gap:2px}
+  .rx-ph{font-size:8px;padding:1px 4px;border-radius:2px;background:var(--p3l);color:var(--p3);margin-left:4px;font-weight:500}
+
+  /* People cards */
+  .pcard{background:#F5F4F0;border:.5px solid #E8E5DE;border-radius:7px;padding:6px 8px;display:flex;align-items:center;gap:7px;margin-bottom:4px;position:relative}
+  .pav{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600}
+  .pname{font-size:10px;font-weight:500;color:#1A2B38}
+  .psub{font-size:9px;color:#9b9b9b}
+  .pyears{font-size:15px;font-weight:600;margin-left:auto}
+
+  /* Events row */
+  .ev3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+  .ecard{background:#F5F4F0;border:.5px solid #E8E5DE;border-radius:7px;padding:7px 8px;display:flex;align-items:center;gap:8px}
+  .edate{background:#fff;border:.5px solid #D8D5CC;border-radius:5px;padding:3px 5px;text-align:center;width:36px;flex-shrink:0}
+  .eday{font-size:13px;font-weight:600;color:#1A2B38;line-height:1}
+  .emon{font-size:8px;color:#9b9b9b;font-weight:500;text-transform:uppercase}
+  .etitle{font-size:10px;font-weight:500;color:#1A2B38}
+  .esub{font-size:9px;color:#9b9b9b}
+  .etag{font-size:8px;font-weight:600;padding:1px 5px;border-radius:3px;margin-left:auto;flex-shrink:0}
+  .online{background:#e6f1fb;color:#185fa5}
+  .offline{background:#e1f5ee;color:#0f6e56}
+  .hybrid{background:#faeeda;color:#854f0b}
+
+  /* Resources */
+  .res4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+  .rcard{background:#F5F4F0;border:.5px solid #E8E5DE;border-radius:7px;padding:8px 9px;display:flex;align-items:center;gap:7px}
+  .ric{width:24px;height:24px;border-radius:5px;background:#fff;border:.5px solid #D8D5CC;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+
+  /* Footer */
+  .ft{background:#F5F4F0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+  .soc-btn{padding:4px 10px;border:.5px solid #D8D5CC;border-radius:20px;font-size:9px;color:#6b6b6b;background:#fff;display:inline-block;margin-right:4px}
+
+  /* Divider between sections */
+  .wf-divider{height:1px;background:#F0EDE8;margin:0}
+
+  /* Sub-phase labels inside split cols */
+  .sub-ph{display:inline-block;font-size:8px;font-weight:600;padding:1px 5px;border-radius:3px;margin-top:2px}
+  .sp1{background:var(--p1);color:#fff}
+  .sp3{background:var(--p3);color:#fff}
+  .sp4{background:var(--p4);color:#fff}
+  .sp2{background:var(--p2);color:#fff}
+
+  /* Phase timeline at bottom */
+  .timeline{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:20px}
+  .tcard{border-radius:10px;padding:12px 14px}
+  .tc1{background:var(--p1l);border:1px solid var(--p1b)}
+  .tc2{background:var(--p2l);border:1px solid var(--p2b)}
+  .tc3{background:var(--p3l);border:1px solid var(--p3b)}
+  .tc4{background:var(--p4l);border:1px solid var(--p4b)}
+  .tc-head{font-size:11px;font-weight:600;margin-bottom:6px}
+  .tc1 .tc-head{color:var(--p1)}
+  .tc2 .tc-head{color:var(--p2)}
+  .tc3 .tc-head{color:var(--p3)}
+  .tc4 .tc-head{color:var(--p4)}
+  .tc-item{font-size:10px;color:#3D5A6C;margin-bottom:3px;display:flex;gap:5px;line-height:1.4}
+  .tc-item::before{content:'→';opacity:.5;flex-shrink:0}
+  .tc-week{font-size:10px;font-weight:500;opacity:.7;margin-bottom:6px}
+  .tc1 .tc-week{color:var(--p1)}
+  .tc2 .tc-week{color:var(--p2)}
+  .tc3 .tc-week{color:var(--p3)}
+  .tc4 .tc-week{color:var(--p4)}
+
+  @media(max-width:640px){
+    .two{grid-template-columns:1fr}
+    .ev3{grid-template-columns:repeat(2,1fr)}
+    .res4{grid-template-columns:repeat(2,1fr)}
+    .nav6{grid-template-columns:repeat(3,1fr)}
+    .actions{grid-template-columns:repeat(3,1fr)}
+    .timeline{grid-template-columns:repeat(2,1fr)}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Legend + filter -->
+  <div style="margin-bottom:16px">
+    <div style="font-size:18px;font-weight:600;color:#1A2B38;margin-bottom:4px">SBL Портал — план запуска по фазам</div>
+    <div style="font-size:12px;color:#6b6b6b;margin-bottom:14px">Цветная рамка слева = в какую очередь делается этот блок</div>
+    <div class="legend">
+      <div class="leg leg-all" onclick="filter(0)">Все фазы</div>
+      <div class="leg leg1" onclick="filter(1)"><div class="leg-dot" style="background:var(--p1)"></div>Фаза 1 — нед 3–4</div>
+      <div class="leg leg2" onclick="filter(2)"><div class="leg-dot" style="background:var(--p2)"></div>Фаза 2 — нед 5–6</div>
+      <div class="leg leg3" onclick="filter(3)"><div class="leg-dot" style="background:var(--p3)"></div>Фаза 3 — нед 7–8</div>
+      <div class="leg leg4" onclick="filter(4)"><div class="leg-dot" style="background:var(--p4)"></div>Фаза 4 — нед 9–10</div>
+    </div>
+  </div>
+
+  <!-- WIREFRAME -->
+  <div class="wf">
+
+    <!-- HEADER — Phase 1 -->
+    <div class="blk" data-ph="1">
+      <div class="tint"></div>
+      <div class="ph ph1">Фаза 1 · нед 3</div>
+      <div class="inner">
+        <div class="sec-label">Шапка · Tilda</div>
+        <div class="hdr">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="logo-box">SB</div>
+            <span style="font-size:12px;font-weight:600;color:#1A2B38">Корп портал</span>
+          </div>
+          <div class="search"><span>🔍</span><span>Поиск...</span></div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div class="avatar">АИ</div>
+            <div style="font-size:10px"><div style="font-weight:500">Анна И.</div><div style="color:#9b9b9b">Product</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="wf-divider"></div>
+
+    <!-- EXTERNAL SYSTEMS — Phase 1 links + Phase 2 automation -->
+    <div class="blk" data-ph="1">
+      <div class="tint"></div>
+      <div class="ph ph1">Фаза 1 · кнопки → Фаза 2 · автоматизация</div>
+      <div class="inner">
+        <div class="sec-label">Внешние системы и быстрые действия</div>
+        <div class="actions">
+          <div class="ap">
+            <div style="width:28px;height:28px;border-radius:6px;background:#e6f1fb;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#185fa5;margin:0 auto 2px">Bi</div>
+            <div class="al">Битрикс24</div>
+            <div class="ap-ph ap-p1">Ф1 → ссылка</div>
+          </div>
+          <div class="ap">
+            <div style="width:28px;height:28px;border-radius:6px;background:#faece7;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#993c1d;margin:0 auto 2px">HR</div>
+            <div class="al">HR-система</div>
+            <div class="ap-ph ap-p1">Ф1 → ссылка</div>
+          </div>
+          <div class="ap">
+            <span class="ai">🏖️</span>
+            <div class="al">Отпуск</div>
+            <div class="ap-ph ap-p1">Ф1 → форма</div>
+            <div class="ap-ph ap-p2" style="margin-top:2px">Ф2 → Zapier</div>
+          </div>
+          <div class="ap">
+            <span class="ai">🤒</span>
+            <div class="al">Больничный</div>
+            <div class="ap-ph ap-p1">Ф1 → форма</div>
+            <div class="ap-ph ap-p2" style="margin-top:2px">Ф2 → Zapier</div>
+          </div>
+          <div class="ap">
+            <span class="ai">💡</span>
+            <div class="al">Предложить идею</div>
+            <div class="ap-ph ap-p1">Ф1 → форма</div>
+            <div class="ap-ph ap-p2" style="margin-top:2px">Ф2 → трекер</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="wf-divider"></div>
+
+    <!-- HERO — Phase 1 -->
+    <div class="blk" data-ph="1">
+      <div class="tint"></div>
+      <div class="ph ph1">Фаза 1 · нед 3</div>
+      <div class="inner">
+        <div class="sec-label">Hero-баннер / карусель · Tilda T-Slider</div>
+        <div class="hero">
+          <div class="hero-eyebrow">ГЛАВНОЕ СОБЫТИЕ</div>
+          <div class="hero-title">Запуск новой системы коммуникаций</div>
+          <div class="hero-sub">Переходим на Веб портал + корп мессенджер.</div>
+          <div class="hero-btns">
+            <div class="btn-s">Читать</div>
+            <div class="btn-s">▶ Видео</div>
+          </div>
+          <div class="hero-dots" style="margin-top:8px">
+            <div class="dot-active"></div><div class="dot-in"></div><div class="dot-in"></div>
+            <div style="margin-left:auto;font-size:9px;color:#9b9b9b">1 / 3</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="wf-divider"></div>
+
+    <!-- NAV — Phase 1 structure + Phase 3 team section -->
+    <div class="blk" data-ph="1">
+      <div class="tint"></div>
+      <div class="ph ph1">Фаза 1 · базовый контент</div>
+      <div class="inner">
+        <div class="sec-label">Навигация по разделам</div>
+        <div class="nav6">
+          <div class="np"><span class="ic">🎓</span><span class="nl">Онбординг</span><br><span class="sub-ph sp1">Ф1</span></div>
+          <div class="np"><span class="ic">🏢</span><span class="nl">О компании</span><br><span class="sub-ph sp1">Ф1</span></div>
+          <div class="np"><span class="ic">👥</span><span class="nl">Команда и орг структура</span><br><span class="sub-ph sp1">Ф1 текст</span> <span class="sub-ph sp3">Ф3 карточки</span></div>
+          <div class="np"><span class="ic">📖</span><span class="nl">Правила и стандарты</span><br><span class="sub-ph sp1">Ф1</span></div>
+          <div class="np"><span class="ic">📰</span><span class="nl">Новости</span><br><span class="sub-ph sp1">Ф1</span></div>
+          <div class="np"><span class="ic">🗓️</span><span class="nl">Мероприятия</span><br><span class="sub-ph sp1">Ф1 статик</span> <span class="sub-ph sp2">Ф2 Calendar</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="wf-divider"></div>
+
+    <!-- 2-COL: FEED + PEOPLE -->
+    <div class="two">
+
+      <!-- LEFT: FEED -->
+      <div style="border-right:1px solid #F0EDE8">
+
+        <!-- Feed block — Phase 1 posts, Phase 3 reactions -->
+        <div class="blk" data-ph="1" style="border-radius:0">
+          <div class="tint"></div>
+          <div class="ph ph1">Фаза 1 · Tilda Blog</div>
+          <div class="inner">
+            <div class="sec-label">Лента новостей — микроблог</div>
+
+            <div class="post">
+              <div class="post-h">
+                <div class="post-av" style="background:#e1f5ee;color:#0f6e56">КР</div>
+                <div><div class="post-name">Ксения Р. <span style="font-weight:400;color:#9b9b9b">· HR</span></div><div class="post-time">сегодня · 10:32</div></div>
+                <span class="post-tag" style="background:#e1f5ee;color:#085041">Важно</span>
+              </div>
+              <div class="post-body">Обновили правила согласования отпусков — заявка через HR-систему за 2 недели.<br><a class="post-link" href="#">→ Читать регламент</a></div>
+              <div class="reactions">
+                <div class="rx">👍 <span style="font-size:9px">14</span></div>
+                <div class="rx">👀 <span style="font-size:9px">3</span></div>
+                <div class="rx">🙏 <span style="font-size:9px">2</span></div>
+                <span class="rx-ph">Ф3 · Hyvor Talk</span>
+              </div>
+            </div>
+
+            <div class="post">
+              <div class="post-h">
+                <div class="post-av" style="background:#e6f1fb;color:#185fa5">ДМ</div>
+                <div><div class="post-name">Дима М. <span style="font-weight:400;color:#9b9b9b">· Product</span></div><div class="post-time">вчера · 15:10</div></div>
+                <span class="post-tag" style="background:#e6f1fb;color:#0c447c">Запуск</span>
+              </div>
+              <div class="post-body">Новая CRM-интеграция с Битриксом 🚀<br><a class="post-link" href="#">→ Открыть в Битрикс24</a></div>
+              <div class="reactions">
+                <div class="rx">🔥 <span style="font-size:9px">21</span></div>
+                <div class="rx">🎉 <span style="font-size:9px">4</span></div>
+                <span class="rx-ph">Ф3 · Hyvor Talk</span>
+              </div>
+            </div>
+
+            <div class="post">
+              <div class="post-h">
+                <div class="post-av" style="background:#faeeda;color:#854f0b">АП</div>
+                <div><div class="post-name">Алёна П. <span style="font-weight:400;color:#9b9b9b">· Marketing</span></div><div class="post-time">3 дня назад</div></div>
+                <span class="post-tag" style="background:#faeeda;color:#633806">Событие</span>
+              </div>
+              <div class="post-body">All-Hands — 15 апреля в 12:00.<br><a class="post-link" href="#">→ Добавить в календарь</a></div>
+              <div class="reactions">
+                <div class="rx">✅ <span style="font-size:9px">10</span></div>
+                <span class="rx-ph">Ф3 · Hyvor Talk</span>
+              </div>
+            </div>
+
+            <div style="text-align:center;padding:6px 0 2px">
+              <span style="border:.5px solid #D8D5CC;border-radius:4px;padding:4px 14px;font-size:10px;color:#6b6b6b">Загрузить ещё →</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="wf-divider"></div>
+
+        <!-- Autopost — Phase 4 -->
+        <div class="blk" data-ph="4" style="border-radius:0">
+          <div class="tint"></div>
+          <div class="ph ph4">Фаза 4 · Zapier RSS</div>
+          <div class="inner" style="padding:10px 16px 10px 18px">
+            <div class="sec-label">Автопост новостей → корп мессенджер</div>
+            <div style="background:#F5F4F0;border:.5px solid #E8E5DE;border-radius:7px;padding:8px 10px;font-size:10px;color:#3D5A6C;display:flex;align-items:center;gap:8px">
+              <span style="font-size:16px">📣</span>
+              <div>Tilda Blog RSS → Zapier → сообщение в канал<br><span style="color:#9b9b9b">Новость опубликована → анонс автоматически</span></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: PEOPLE -->
+      <div>
+
+        <!-- Birthdays — Phase 1 static, Phase 3 dynamic, Phase 4 bot -->
+        <div class="blk" data-ph="3" style="border-radius:0">
+          <div class="tint"></div>
+          <div class="ph ph3">Ф1 статик → Ф3 из Sheets → Ф4 бот</div>
+          <div class="inner">
+            <div class="sec-label">Дни рождения</div>
+            <div style="display:flex;gap:5px;margin-bottom:6px;flex-wrap:wrap">
+              <span class="sub-ph sp1">Ф1: вручную</span>
+              <span class="sub-ph sp3">Ф3: Google Sheets → Softr</span>
+              <span class="sub-ph sp4">Ф4: бот в мессенджер</span>
+            </div>
+            <div class="pcard" style="border:.5px solid #FAC775">
+              <div class="pav" style="background:#faeeda;color:#854f0b">МК</div>
+              <div><div class="pname">Маша К.</div><span style="font-size:8px;background:#faeeda;color:#854f0b;padding:1px 4px;border-radius:2px">сегодня ✨</span></div>
+              <span style="font-size:16px;margin-left:auto">🎂</span>
+            </div>
+            <div class="pcard">
+              <div class="pav" style="background:#faece7;color:#993c1d">ДП</div>
+              <div><div class="pname">Дима П.</div><div class="psub">15 апр</div></div>
+              <span style="font-size:16px;margin-left:auto">🎂</span>
+            </div>
+            <div class="pcard">
+              <div class="pav" style="background:#eaf3de;color:#3b6d11">ЛС</div>
+              <div><div class="pname">Лена С.</div><div class="psub">22 апр</div></div>
+              <span style="font-size:16px;margin-left:auto">🎂</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="wf-divider"></div>
+
+        <!-- Anniversaries — Phase 1 static, Phase 3 dynamic, Phase 4 bot -->
+        <div class="blk" data-ph="3" style="border-radius:0">
+          <div class="tint"></div>
+          <div class="ph ph3">Ф1 статик → Ф3 из Sheets → Ф4 бот</div>
+          <div class="inner">
+            <div class="sec-label">С нами в команде</div>
+            <div style="display:flex;gap:5px;margin-bottom:6px;flex-wrap:wrap">
+              <span class="sub-ph sp1">Ф1: вручную</span>
+              <span class="sub-ph sp3">Ф3: Google Sheets → Softr</span>
+              <span class="sub-ph sp4">Ф4: бот в мессенджер</span>
+            </div>
+            <div class="pcard">
+              <div class="pav" style="background:#e1f5ee;color:#0f6e56">ПК</div>
+              <div style="flex:1"><div class="pname">Петя К.</div><div class="psub">в команде</div></div>
+              <div style="text-align:right"><div class="pyears" style="color:#0f6e56">5</div><div style="font-size:8px;color:#9b9b9b">лет</div></div>
+            </div>
+            <div class="pcard">
+              <div class="pav" style="background:#e6f1fb;color:#185fa5">АМ</div>
+              <div style="flex:1"><div class="pname">Анна М.</div><div class="psub">в команде</div></div>
+              <div style="text-align:right"><div class="pyears" style="color:#185fa5">6</div><div style="font-size:8px;color:#9b9b9b">лет</div></div>
+            </div>
+            <div class="pcard">
+              <div class="pav" style="background:#faeeda;color:#854f0b">СВ</div>
+              <div style="flex:1"><div class="pname">Сергей В.</div><div class="psub">в команде</div></div>
+              <div style="text-align:right"><div class="pyears" style="color:#854f0b">3</div><div style="font-size:8px;color:#9b9b9b">года</div></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="wf-divider"></div>
+
+    <!-- EVENTS — Phase 2 Calendar -->
+    <div class="blk" data-ph="2">
+      <div class="tint"></div>
+      <div class="ph ph2">Фаза 2 · Google Calendar embed + Zapier</div>
+      <div class="inner">
+        <div class="sec-label">Ближайшие мероприятия</div>
+        <div style="display:flex;gap:5px;margin-bottom:8px;flex-wrap:wrap">
+          <span class="sub-ph sp1">Ф1: статичный список вручную</span>
+          <span class="sub-ph sp2">Ф2: Google Calendar embed + форма → автодобавление</span>
+          <span class="sub-ph sp4">Ф4: напоминания в мессенджер за 24ч</span>
+        </div>
+        <div class="ev3">
+          <div class="ecard">
+            <div class="edate"><div class="eday">15</div><div class="emon">апр</div></div>
+            <div style="flex:1"><div class="etitle">All-Hands Q1</div><div class="esub">12:00 · Zoom</div></div>
+            <div class="etag online">Онлайн</div>
+          </div>
+          <div class="ecard">
+            <div class="edate"><div class="eday">18</div><div class="emon">апр</div></div>
+            <div style="flex:1"><div class="etitle">Командный квиз</div><div class="esub">18:00 · офис</div></div>
+            <div class="etag offline">Офлайн</div>
+          </div>
+          <div class="ecard">
+            <div class="edate"><div class="eday">22</div><div class="emon">апр</div></div>
+            <div style="flex:1"><div class="etitle">Ретро Q1</div><div class="esub">15:00 · Meet</div></div>
+            <div class="etag online">Онлайн</div>
+          </div>
+          <div class="ecard">
+            <div class="edate"><div class="eday">25</div><div class="emon">апр</div></div>
+            <div style="flex:1"><div class="etitle">Воркшоп брендинг</div><div class="esub">11:00 · офис</div></div>
+            <div class="etag offline">Офлайн</div>
+          </div>
+          <div class="ecard">
+            <div class="edate"><div class="eday">28</div><div class="emon">апр</div></div>
+            <div style="flex:1"><div class="etitle">1:1 митинги</div><div class="esub">весь день</div></div>
+            <div class="etag hybrid">Гибрид</div>
+          </div>
+          <div class="ecard" style="border:.5px dashed #D8D5CC;background:#fafaf8;justify-content:center">
+            <div style="text-align:center"><div style="font-size:16px;margin-bottom:2px">➕</div><div style="font-size:10px;color:#9b9b9b">Предложить мероприятие</div><div><span class="sub-ph sp2" style="margin-top:3px;display:inline-block">Ф2 → Zapier</span></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="wf-divider"></div>
+
+    <!-- RESOURCES — Phase 1 -->
+    <div class="blk" data-ph="1">
+      <div class="tint"></div>
+      <div class="ph ph1">Фаза 1 · статические ссылки</div>
+      <div class="inner">
+        <div class="sec-label">Ресурсы и материалы</div>
+        <div class="res4">
+          <div class="rcard"><div class="ric">🖼️</div><div><div style="font-size:10px;font-weight:500;color:#1A2B38">Шаблоны</div><div style="font-size:9px;color:#9b9b9b">Slides, PPTX</div></div></div>
+          <div class="rcard"><div class="ric">🎨</div><div><div style="font-size:10px;font-weight:500;color:#1A2B38">Фоны</div><div style="font-size:9px;color:#9b9b9b">для встреч</div></div></div>
+          <div class="rcard"><div class="ric">📐</div><div><div style="font-size:10px;font-weight:500;color:#1A2B38">Брендбук</div><div style="font-size:9px;color:#9b9b9b">лого, цвета</div></div></div>
+          <div class="rcard"><div class="ric">❓</div><div><div style="font-size:10px;font-weight:500;color:#1A2B38">FAQ</div><div style="font-size:9px;color:#9b9b9b">частые вопросы</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="wf-divider"></div>
+
+    <!-- FOOTER — Phase 1 -->
+    <div class="blk" data-ph="1">
+      <div class="tint"></div>
+      <div class="ph ph1">Фаза 1 · статический подвал</div>
+      <div class="inner">
+        <div class="sec-label">Подвал</div>
+        <div class="ft">
+          <div>
+            <div style="font-size:11px;font-weight:500;color:#1A2B38">Корп портал · 2025</div>
+            <div style="font-size:10px;color:#9b9b9b">@portal_support</div>
+          </div>
+          <div>
+            <span style="font-size:10px;color:#9b9b9b;margin-right:4px">Соцсети:</span>
+            <span class="soc-btn">✈️ Telegram</span>
+            <span class="soc-btn">📸 Instagram</span>
+            <span class="soc-btn">🔗 LinkedIn</span>
+            <span class="soc-btn">▶️ YouTube</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /wf -->
+
+  <!-- PHASE TIMELINE -->
+  <div style="font-size:13px;font-weight:600;color:#1A2B38;margin:24px 0 10px">Что входит в каждую фазу</div>
+  <div class="timeline">
+    <div class="tcard tc1">
+      <div class="tc-week">Нед 3–4</div>
+      <div class="tc-head">Фаза 1 — MVP запуск</div>
+      <div class="tc-item">Шапка + поиск</div>
+      <div class="tc-item">Hero-карусель</div>
+      <div class="tc-item">5 кнопок-ссылок</div>
+      <div class="tc-item">6 разделов навигации</div>
+      <div class="tc-item">Tilda Blog (лента)</div>
+      <div class="tc-item">3 формы (Tally)</div>
+      <div class="tc-item">Ресурсы + подвал</div>
+      <div class="tc-item">Дни рождения вручную</div>
+    </div>
+    <div class="tcard tc2">
+      <div class="tc-week">Нед 5–6</div>
+      <div class="tc-head">Фаза 2 — Интеграции</div>
+      <div class="tc-item">Google Calendar embed</div>
+      <div class="tc-item">Форма мероприятия → Calendar</div>
+      <div class="tc-item">Zapier: отпуск → HR email</div>
+      <div class="tc-item">Zapier: больничный → HR</div>
+      <div class="tc-item">Zapier: идея → Sheets</div>
+    </div>
+    <div class="tcard tc3">
+      <div class="tc-week">Нед 7–8</div>
+      <div class="tc-head">Фаза 3 — Живые данные</div>
+      <div class="tc-item">Hyvor Talk: реакции в блоге</div>
+      <div class="tc-item">Дни рождения → Sheets + Softr</div>
+      <div class="tc-item">Годовщины → Sheets + Softr</div>
+      <div class="tc-item">Раздел Команда: карточки + Miro</div>
+      <div class="tc-item">QA всех разделов</div>
+    </div>
+    <div class="tcard tc4">
+      <div class="tc-week">Нед 9–10</div>
+      <div class="tc-head">Фаза 4 — Автоматизация</div>
+      <div class="tc-item">Бот поздравлений с ДР</div>
+      <div class="tc-item">Бот годовщин «N лет»</div>
+      <div class="tc-item">Напоминания за 24ч</div>
+      <div class="tc-item">Автопост новостей RSS</div>
+      <div class="tc-item">Тест всех Zapier-сценариев</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let current = 0;
+function filter(ph) {
+  current = ph;
+  document.querySelectorAll('.blk').forEach(b => {
+    if (ph === 0) {
+      b.classList.remove('dim');
+    } else {
+      const bph = parseInt(b.getAttribute('data-ph'));
+      b.classList.toggle('dim', bph !== ph);
+    }
+  });
+}
+</script>
+</body>
+</html>
